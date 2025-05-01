@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:udemy_s6/models/expense.dart';
 
 class NewExpense extends StatefulWidget {
-  const NewExpense({super.key});
+  const NewExpense({super.key, required this.onAddExpense});
+
+  final void Function(Expense expense) onAddExpense;
 
   @override
   State<NewExpense> createState() => _NewExpenseState();
@@ -14,6 +16,44 @@ class _NewExpenseState extends State<NewExpense> {
       TextEditingController(); //always use dispose when TextEdit.. is used
   final _amountController = TextEditingController();
   DateTime? _selectedDate;
+  Category _selectedCategory = Category.other;
+
+  void _submitExpenseData() {
+    final enteredAmount = double.tryParse(_amountController.text);
+    final amountIsInvalid = enteredAmount == null || enteredAmount <= 0;
+    if (_titleController.text.trim().isEmpty ||
+        amountIsInvalid ||
+        _selectedDate == null) {
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text("Invalid input"),
+              content: Text(
+                "One of title, amount, date or category was not entered",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                  },
+                  child: Text("OK"),
+                ),
+              ],
+            ),
+      );
+      return;
+    }
+    widget.onAddExpense(
+      Expense(
+        date: _selectedDate!,
+        title: _titleController.text,
+        amount: enteredAmount,
+        category: _selectedCategory,
+      ),
+    );
+    Navigator.pop(context);
+  }
 
   @override
   void dispose() {
@@ -56,7 +96,7 @@ class _NewExpenseState extends State<NewExpense> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.fromLTRB(16, 60, 16, 16),
       child: Column(
         children: [
           TextField(
@@ -98,15 +138,33 @@ class _NewExpenseState extends State<NewExpense> {
               ),
             ],
           ),
+          SizedBox(height: 20),
           Row(
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  print(_amountController.text);
-                  print(
-                    _titleController.text,
-                  ); //print(_enteredTitle) with alt method;
+              DropdownButton(
+                value: _selectedCategory,
+                items:
+                    Category.values
+                        .map(
+                          (category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(category.name.toUpperCase()),
+                          ),
+                        )
+                        .toList(),
+                onChanged: (value) {
+                  if (value == null) {
+                    return;
+                  }
+                  setState(() {
+                    _selectedCategory = value;
+                  });
                 },
+              ),
+              Spacer(),
+              ElevatedButton(
+                onPressed:
+                    _submitExpenseData, // () {print(_enteredTitle)} with alt method;
                 child: Text("save expense"),
               ),
               TextButton(
