@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:udemy_s6/widgets/chart/chart.dart';
 import 'package:udemy_s6/widgets/new_expense.dart';
 import '../models/expense.dart';
 import 'expenses_list/expenses_list.dart';
@@ -82,7 +83,12 @@ class _ExpensesState extends State<Expenses> {
           IconButton(onPressed: _openAddExpenseOverlay, icon: Icon(Icons.add)),
         ],
       ),
-      body: Column(children: [Text("the chart"), Expanded(child: mainContent)]),
+      body: Column(
+        children: [
+          Chart(expenses: _registeredExpenses),
+          Expanded(child: mainContent),
+        ],
+      ),
     );
   }
 }
